@@ -145,7 +145,15 @@
 									"pm.environment.set(\"accessTok\", accessToken);",
 									"",
 									"var refreshToken = responseJson.refresh_token;",
-									"pm.environment.set(\"refreshTok\", refreshToken);"
+									"pm.environment.set(\"refreshTok\", refreshToken);",
+									"",
+									"var clientId = pm.environment.get(\"clientID\");",
+									"var clientSecret = pm.environment.get(\"clientSecret\");",
+									"var combined = clientId + \":\" + clientSecret;",
+									"var encodedCredentials = Buffer.from(combined).toString('base64');",
+									"pm.environment.set(\"encodedCredentials\", encodedCredentials);",
+									"",
+									""
 								],
 								"type": "text/javascript"
 							}
@@ -160,7 +168,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "Basic NmQ3NzkyY2QxMzdiNDJkYjhlMzIxYmE3M2I2MGRhNjg6ZDZjZDI2MDUtZDBjOC00MDY5LWE3MjQtNzM5MmM4ZjAwMDA3",
+								"value": "Basic {{encodedCredentials}}",
 								"type": "text"
 							}
 						],
