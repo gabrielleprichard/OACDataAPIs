@@ -285,7 +285,27 @@
 								}
 							}
 						},
-						"url": "{{baseURL}}/api/20210901/catalog/dataflows/J2dhYnJpZWxsZS5wcmljaGFyZEBvcmFjbGUuY29tJy4ncGFyYW0tZGYn/actions/run"
+						"url": {
+							"raw": "{{baseURL}}/api/20210901/catalog/dataflows/:dataFlowID/actions/run",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"20210901",
+								"catalog",
+								"dataflows",
+								":dataFlowID",
+								"actions",
+								"run"
+							],
+							"variable": [
+								{
+									"key": "dataFlowID",
+									"value": "{{dfObjectIdEncoded}}"
+								}
+							]
+						}
 					},
 					"response": []
 				}
