@@ -1,0 +1,394 @@
+{
+	"info": {
+		"_postman_id": "0eeaa8b8-a4c1-4c1f-a149-8c2bb850abd7",
+		"name": "Data Refresh APIs",
+		"description": "---\n\n# OAC Data Flows, Sequences, and Data Refresh Artifacts Collection\n\n🚀 **Get started here**\n\nThis collection is designed to facilitate interaction with Oracle Analytics Cloud's public REST APIs, focusing on Data Flows, Sequences, and Datasets. It guides you through obtaining access tokens which are required for authorization, executing data flows, and executing sequences.\n\n🔖 **How to use this collection**\n\n**Setup**\n\nThis collection is designed to be used with environment variables to streamline the process and to avoid unecessary manual updates.\n\n**Step 1: Obtain an Access Token**\n\n- Navigate to the Authorization folder.\n- Execute the requests in the order in which they are labeled. This collection leverages device code to obtain an access token.\n    - **Step 1: Obtain Verification URL** - This sends a request to the IDCS Confidential Aplication device authorization endpoint to get a device code, a user code, and a verification URL. Once you obtain the verification URL, open this URL in a browser and enter the user code when prompted. Functionally what's happening is that you are logging into the authorization server.\n    - **Step 2: Obtain Access Token** - This step allows you to poll the token endpoint manually. You should receive an access token and a refresh token.\n    - **Step 3: Use Refresh Token to get Access Token -** If your access token expires, you can use this method to obtain a new access token using the refresh token, rather than having to go through the authorization process again.\n\n**Step 2: Execute Data Flow Requests**\n\n- Open the Data Flow folder.\n- Depending on whether you want to execute a normal data flow or a parameterized data flow, open the corresponding method.\n- Click \"Send\" to execute.\n    \n\n**Step 3: Execute Sequence Requests**\n\n- Navigate to the Sequences folder.\n- Open the method.\n- Click \"Send\" to proceed.\n    \n\n**Step 4: Manage Data and Responses**\n\n- View responses to check for status codes (e.g., 202, 400 Bad Request, etc), response times.\n    \n\n💡 Helpful Information\n\n- [API Documentation](https://docs.oracle.com/en/cloud/paas/analytics-cloud/acapi/quick-start.html)\n- [Authentication Help](https://docs.oracle.com/en/cloud/paas/analytics-cloud/acapi/authenticate.html)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authorization",
+			"item": [
+				{
+					"name": "Step 1: Obtain Verification URL",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"id": "543740e5-388a-4d6e-8530-201942b39eb8",
+								"exec": [
+									"// Parse the response body as JSON",
+									"var responseJson = pm.response.json();",
+									"",
+									"var deviceCode = responseJson.device_code;",
+									"pm.environment.set(\"deviceCode\", deviceCode);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "0626dc91-a4f3-4f00-ab9d-98765411d872",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "response_type",
+									"value": "device_code",
+									"type": "text"
+								},
+								{
+									"key": "scope",
+									"value": "{{scope}}",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{clientID}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{deviceURL}}",
+						"description": "This is a POST request, submitting data to an API via the request body. This request submits JSON data, and the data is reflected in the response.\n\nA successful POST request typically returns a `200 OK` or `201 Created` response code."
+					},
+					"response": []
+				},
+				{
+					"name": "Step 2: Obtain Access Token",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "a2974888-bf95-498f-99cb-c73e7a91a959",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "a327a5ed-6b38-44da-8d60-4f9d902c7ce7",
+								"exec": [
+									"var responseJson= pm.response.json()",
+									"var accessToken = responseJson.access_token;",
+									"pm.environment.set(\"accessTok\", accessToken);",
+									"",
+									"var refreshToken = responseJson.refresh_token;",
+									"pm.environment.set(\"refreshTok\", refreshToken);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "c826a9b1-baf8-4c4a-90f1-e1b6c1e8be7d",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "urn:ietf:params:oauth:grant-type:device_code",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{clientID}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{clientSecret}}",
+									"type": "text"
+								},
+								{
+									"key": "device_code",
+									"value": "{{deviceCode}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{tokenURL}}"
+					},
+					"response": []
+				},
+				{
+					"name": "Step 3 (Optional): Use Refresh Token to get Access Token",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "b0ffaf5d-0abc-4ce4-8fd7-0d9084c88aca",
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"id": "c69a7fdb-33af-4581-9223-22345e18eced",
+								"exec": [
+									"var responseJson= pm.response.json()",
+									"var accessToken = responseJson.access_token;",
+									"pm.environment.set(\"accessTok\", accessToken);",
+									"",
+									"var refreshToken = responseJson.refresh_token;",
+									"pm.environment.set(\"refreshTok\", refreshToken);",
+									"",
+									"var clientId = pm.environment.get(\"clientID\");",
+									"var clientSecret = pm.environment.get(\"clientSecret\");",
+									"var combined = clientId + \":\" + clientSecret;",
+									"var encodedCredentials = Buffer.from(combined).toString('base64');",
+									"pm.environment.set(\"encodedCredentials\", encodedCredentials);",
+									"",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "51e7cdab-607e-4d51-a89f-624a00958db5",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Basic {{encodedCredentials}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "refresh_token",
+									"type": "text"
+								},
+								{
+									"key": "refresh_token",
+									"value": "{{refreshTok}}",
+									"type": "text"
+								},
+								{
+									"key": "scope",
+									"value": "{{scope}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": "{{tokenURL}}"
+					},
+					"response": []
+				}
+			],
+			"id": "e8ab57c2-6143-48c5-bbfb-98a039de3e52",
+			"description": "# Authorization-related requests are included in this folder."
+		},
+		{
+			"name": "Data Flows",
+			"item": [
+				{
+					"name": "Execute Data Flow",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "75658d7a-3adb-4576-91ee-20df64dd388b",
+								"exec": [
+									"//base 64 id encode",
+									"var dfObjectId = pm.environment.get(\"dfObjectId\")",
+									"var encodedValue = Buffer.from(dfObjectId).toString('base64');",
+									"pm.environment.set(\"dfObjectIdEncoded\", encodedValue);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "8ed502e3-bbf3-43a4-806a-86089c83ad08",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{accessTok}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/20210901/catalog/dataflows/:dataFlowID/actions/run",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"20210901",
+								"catalog",
+								"dataflows",
+								":dataFlowID",
+								"actions",
+								"run"
+							],
+							"variable": [
+								{
+									"key": "dataFlowID",
+									"value": "{{dfObjectIdEncoded}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Execute Parameterized Data Flow",
+					"id": "c3ea6f03-0dc7-4c9c-8775-f3685e165143",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{accessTok}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"parameters\":   [\n      {\n        \"parameterName\": \"<sourceParameterName>\",\n        \"datasetName\": \"<sourceDatasetName>\",\n        \"type\": \"source\"\n      },\n      {\n        \"parameterName\": \"<targetParameterName>\",\n        \"datasetName\": \"<targetDatasetName>\",\n        \"type\": \"target\"\n      }\n    ]\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": "{{baseURL}}/api/20210901/catalog/dataflows/J2dhYnJpZWxsZS5wcmljaGFyZEBvcmFjbGUuY29tJy4ncGFyYW0tZGYn/actions/run"
+					},
+					"response": []
+				}
+			],
+			"id": "9bffa89d-3145-419e-9b4b-9da921776cef",
+			"description": "# Data flow-related requests are included in this folder."
+		},
+		{
+			"name": "Sequences",
+			"item": [
+				{
+					"name": "Execute Sequence",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"id": "75658d7a-3adb-4576-91ee-20df64dd388b",
+								"exec": [
+									"//base 64 id encode",
+									"var seqObjectId = pm.environment.get(\"sequenceObjectId\")",
+									"var encodedValue = Buffer.from(seqObjectId).toString('base64');",
+									"pm.environment.set(\"sequenceObjectIdEncoded\", encodedValue);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"id": "1124b47a-e162-4ced-8408-f88b6156793b",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": {
+								"token": "{{accessTok}}"
+							}
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": []
+						},
+						"url": {
+							"raw": "{{baseURL}}/api/20210901/catalog/sequences/:sequenceID/actions/run",
+							"host": [
+								"{{baseURL}}"
+							],
+							"path": [
+								"api",
+								"20210901",
+								"catalog",
+								"sequences",
+								":sequenceID",
+								"actions",
+								"run"
+							],
+							"variable": [
+								{
+									"key": "sequenceID",
+									"value": "{{sequenceObjectIdEncoded}}"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"id": "f1f4ef83-e925-4b5f-9c59-fa2767b447ba",
+			"description": "# Sequence-related requests are included in this folder."
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"id": "315bf25a-2778-43f1-a62d-4e62d71d92d4",
+			"key": "id",
+			"value": "1"
+		},
+		{
+			"id": "ecfe1aee-5d14-444d-9176-182a19d022ee",
+			"key": "base_url",
+			"value": "https://postman-rest-api-learner.glitch.me/"
+		}
+	]
+}
