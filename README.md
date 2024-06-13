@@ -1,4 +1,6 @@
 # OACDataAPIs
+
+NOTE: This repo is old. There is a more up-to-date repository on my account. 
 This repo contains the Postman collection for using the OAC Public APIs.
 
 In the PostmanCollections folder, you will find two files.
